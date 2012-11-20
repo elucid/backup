@@ -83,13 +83,17 @@ module Backup
       }
     end
 
+    def self.using_bundler?
+      @using_bundler ||= File.exists?(ENV['BUNDLE_GEMFILE'])
+    end
+
     ##
     # Attempts to load the specified gem (by name and version).
     # If the gem with the correct version cannot be found, it'll display a message
     # to the user with instructions on how to install the required gem
     def self.load(name)
       begin
-        gem(name, all[name][:version])
+        gem(name, all[name][:version]) unless using_bundler?
         require(all[name][:require])
       rescue LoadError
         Logger.error Errors::Dependency::LoadError.new(<<-EOS)
